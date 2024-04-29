@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   php:
-    build: .
+    image: 63.35.190.156:8085/zaag-portfolio:7
     ports:
-      - "8080:80"
+      - "80:80"
     environment:
       SERVER: db
       USER: root
