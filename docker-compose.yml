@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    image: 63.35.190.156:8085/zaag-portfolio:7
+    image: 18.201.64.99:8085/zaag-portfolio:7
     ports:
       - "80:80"
     environment:
