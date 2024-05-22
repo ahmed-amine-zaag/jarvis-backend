@@ -13,6 +13,8 @@ services:
       DATABASE_NAME: dbattendance
     depends_on:
       - db
+    networks:
+      - pfeNetwork
 
   db:
     image: mariadb:10.6
@@ -24,3 +26,9 @@ services:
       - ./attendancemonitoring/dbattendance.sql:/docker-entrypoint-initdb.d/dbattendance.sql
     ports:
       - "3306:3306"
+    networks:
+      - pfeNetwork
+
+networks:
+  pfeNetwork:
+    driver: bridge
