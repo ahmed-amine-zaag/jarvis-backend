@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    image: 18.201.64.99:8085/zaag-portfolio:9
+    image: stage.acoba.com/zaag-portfolio:latest
     ports:
       - "80:80"
     environment:
