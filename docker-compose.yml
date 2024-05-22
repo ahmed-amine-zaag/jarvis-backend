@@ -3,6 +3,7 @@ version: '3.8'
 services:
   php:
     image: stage.acoba.com/zaag-portfolio:latest
+    container_name: php-app
     ports:
       - "80:80"
     environment:
@@ -15,6 +16,7 @@ services:
 
   db:
     image: mariadb:10.6
+    container_name: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: dbattendance
