@@ -28,7 +28,7 @@ pipeline {
                 script {
                     def emailBody = readFile('test-results.html')
                     emailext(
-                        to: 'zaagamine98@gmail.com',
+                        to: 'ahmed.aminzaag@acoba.com',
                         subject: 'PHP Unit Test Report: $PROJECT_NAME - Build # $BUILD_NUMBER',
                         body: emailBody,
                         mimeType: 'text/html'
