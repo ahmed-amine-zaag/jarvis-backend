@@ -15,8 +15,27 @@ pipeline {
         }
         stage('UNIT TEST') {
             steps {
-                sh 'phpunit attendancemonitoring/tests/unitTest.php'
+                sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
             }
+        }
+        stage('Transform Report') {
+            steps {
+                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
+            }
+        }
+        stage('Send Email') {
+            steps {
+                script {
+                    def emailBody = readFile('test-results.html')
+                    emailext(
+                        to: 'ahmed.aminzaag@acoba.com',
+                        subject: 'PHP Unit Test Report : $PROJECT_NAME - Build # $BUILD_NUMBER ',
+                        body: emailBody,
+                        mimeType: 'text/html'
+                    )
+                }
+            }
+        }
         }
         stage('CODE ANALYSIS with SONARQUBE') {
             environment {
