@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('checkout SCM Git') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/aminos98/jarvis-backend']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/aminos98/jarvis-backend.git']])
             }
         }
         stage('UNIT TEST') {
