@@ -5,7 +5,7 @@ pipeline {
         projectName = "Jarvis-project"
         scannerHome = tool 'sonarscanner'
         //nexus
-        image_name = "stage.acoba.com/zaag-portfolio:latest"
+        image_name_base = "stage.acoba.com/web-service"
     }
     stages {
         stage('checkout SCM Git') {
@@ -15,7 +15,25 @@ pipeline {
         }
         stage('UNIT TEST') {
             steps {
-                sh 'phpunit attendancemonitoring/tests/unitTest.php'
+                sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
+            }
+        }
+        stage('Transform Report') {
+            steps {
+                sh 'xsltproc attendancemonitoring/phpunit-report.xsl test-results.xml > test-results.html'
+            }
+        }
+        stage('Send Email') {
+            steps {
+                script {
+                    def emailBody = readFile('test-results.html')
+                    emailext(
+                        to: 'zaagamine98@gmail.com',
+                        subject: 'PHP Unit Test Report: $PROJECT_NAME - Build # $BUILD_NUMBER',
+                        body: emailBody,
+                        mimeType: 'text/html'
+                    )
+                }
             }
         }
         stage('CODE ANALYSIS with SONARQUBE') {
@@ -41,7 +59,7 @@ pipeline {
         stage('Building Image') {
             steps {
                 echo 'Building Image ...'
-                sh "docker build -t ${image_name} ."
+                sh "docker build -t ${image_name_base}:${env.BUILD_NUMBER} -t ${image_name_base}:latest ."
             }
         }
         
@@ -51,7 +69,8 @@ pipeline {
                 
                 withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'PSW', usernameVariable: 'USER')]){
                     sh "echo ${PSW} | docker login -u ${USER} --password-stdin stage.acoba.com/repo"
-                    sh "docker push ${image_name}"
+                    sh "docker push ${image_name_base}:${env.BUILD_NUMBER}"
+                    sh "docker push ${image_name_base}:latest"
                 }
             }
         }
