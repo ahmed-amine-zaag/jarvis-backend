@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    image: stage.acoba.com/zaag-portfolio:latest
+    image: stage.acoba.com/web-service:latest
     container_name: php-app
     ports:
       - "80:80"
