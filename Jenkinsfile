@@ -18,18 +18,14 @@ pipeline {
                 sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
             }
         }
-        stage('Transform Report') {
-            steps {
-                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
-            }
-        }
-        stage('Send Email') {
+        stage('Transform and Send Report') {
             steps {
                 script {
+                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
-                        subject: "PHP Unit Test Report: ${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER}",
+                        subject: "PHP Unit Test Report: ${env.projectName} - Build # ${env.BUILD_NUMBER}",
                         body: emailBody,
                         mimeType: 'text/html'
                     )
@@ -85,4 +81,3 @@ pipeline {
         }
     }
 }
-
