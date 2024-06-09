@@ -29,19 +29,17 @@ pipeline {
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
-                        subject: 'PHP Unit Test Report : $PROJECT_NAME - Build # $BUILD_NUMBER ',
+                        subject: "PHP Unit Test Report: ${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER}",
                         body: emailBody,
                         mimeType: 'text/html'
                     )
                 }
             }
         }
-        }
         stage('CODE ANALYSIS with SONARQUBE') {
             environment {
                 PATH = "${scannerHome}/bin:${env.PATH}"
             }
-
             steps {
                 withSonarQubeEnv('sonarserver') {
                     sh """
@@ -56,19 +54,16 @@ pipeline {
                 }
             }
         }
-
         stage('Building Image') {
             steps {
                 echo 'Building Image ...'
                 sh "docker build -t ${image_name_base}:${env.BUILD_NUMBER} -t ${image_name_base}:latest ."
             }
         }
-        
         stage('Pushing Image to Nexus') {
             steps {
                 echo 'Pushing image to docker hosted repository on Nexus ...'
-                
-                withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'PSW', usernameVariable: 'USER')]){
+                withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'PSW', usernameVariable: 'USER')]) {
                     sh "echo ${PSW} | docker login -u ${USER} --password-stdin stage.acoba.com/repo"
                     sh "docker push ${image_name_base}:${env.BUILD_NUMBER}"
                     sh "docker push ${image_name_base}:latest"
@@ -83,12 +78,11 @@ pipeline {
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
                     credentialsId: 'Jenkins-With-Beanstalk-Credentials'
                 ]]) {
-                    //sh "aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID"
-                    //sh "aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY"
                     sh "echo 'n' | eb init --region eu-west-1 ws-jarvis-dev-docker"
                     sh "eb deploy"
                 }
             }
         }
-    }    
+    }
 }
+
