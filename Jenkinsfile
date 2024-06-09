@@ -20,7 +20,7 @@ pipeline {
         }
         stage('Transform Report') {
             steps {
-                sh 'xsltproc attendancemonitoring/phpunit-report.xsl test-results.xml > test-results.html'
+                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
             }
         }
         stage('Send Email') {
