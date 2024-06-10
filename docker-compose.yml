@@ -30,6 +30,6 @@ services:
       - jarvisNetwork
 
 networks:
-  pfeNetwork:
+  jarvisNetwork:
     driver: bridge
     name: jarvisNetwork
