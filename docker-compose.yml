@@ -3,7 +3,7 @@ version: '3.8'
 services:
   php:
     image: stage.acoba.com/web-service:latest
-    container_name: php-app
+    container_name: web-service
     ports:
       - "80:80"
     environment:
@@ -14,7 +14,7 @@ services:
     depends_on:
       - db
     networks:
-      - pfeNetwork
+      - jarvisNetwork
 
   db:
     image: mariadb:10.6
@@ -27,9 +27,9 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - pfeNetwork
+      - jarvisNetwork
 
 networks:
   pfeNetwork:
     driver: bridge
-    name: pfeNetwork
+    name: jarvisNetwork
