@@ -3,7 +3,7 @@ version: '3.8'
 services:
   php:
     image: stage.acoba.com/web-service:latest
-    container_name: web-service
+    container_name: web-service-container
     ports:
       - "80:80"
     environment:
