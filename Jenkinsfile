@@ -7,12 +7,6 @@ pipeline {
         //nexus
         image_name_base = "stage.acoba.com/web-service"
     }
-    stages {
-        stage('checkout SCM Git') {
-            steps {
-                checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/aminos98/jarvis-backend', credentialsId: 'github-token']])
-            }
-        }
         stage('UNIT TEST') {
             steps {
                 sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
