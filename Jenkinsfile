@@ -7,6 +7,13 @@ pipeline {
         //nexus
         image_name_base = "stage.acoba.com/web-service"
     }
+    stages {
+        stage('checkout SCM Git') {
+            steps {
+                checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs:
+                 [[url: 'https://github.com/aminos98/jarvis-backend', credentialsId: 'github-token']])
+            }
+        }
         stage('UNIT TEST') {
             steps {
                 sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
@@ -15,7 +22,8 @@ pipeline {
         stage('Transform and Send Report') {
             steps {
                 script {
-                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
+                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml 
+                    > test-results.html'
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
