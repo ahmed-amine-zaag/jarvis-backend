@@ -52,6 +52,13 @@ pipeline {
                 }
             }
         }
+        stage('Quality Gates') {
+            steps {
+                echo 'step1'
+                sleep time: 1, unit: 'MINUTES'
+                sleep time: 5, unit: 'SECONDS'
+            }
+        }
         stage('Building Image') {
             steps {
                 echo 'Building Image ...'
