@@ -29,7 +29,7 @@ pipeline {
 
         stage('production') {
             when {
-		branch "main-*"
+		branch "main"
             }
             steps {
                 echo 'Hello, prod branch'
