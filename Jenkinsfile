@@ -15,6 +15,7 @@ pipeline {
                 branch 'dev*'
             }
             steps {
+                sh 'chmod +x jenkins/scripts/unit-tests.sh'
                 sh './jenkins/scripts/unit-tests.sh'
             }
         }
