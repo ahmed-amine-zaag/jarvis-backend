@@ -29,12 +29,23 @@ pipeline {
         }
 
         stage('SEND REPORT') {
-            when {
-                branch 'dev*'
-            }
-            steps {
-                script {
-                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml test-results.html'
+    when {
+        branch 'dev*'
+    }
+    steps {
+        script {
+            // Ensure the XML report exists
+            if (fileExists('test-results.xml')) {
+                echo "XML report found: test-results.xml"
+
+                // Transform the XML report to HTML
+                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml test-results.html'
+
+                // Check if the HTML report was created successfully
+                if (fileExists('test-results.html')) {
+                    echo "HTML report generated: test-results.html"
+
+                    // Read the HTML report and send it via email
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
@@ -42,9 +53,15 @@ pipeline {
                         body: emailBody,
                         mimeType: 'text/html'
                     )
+                } else {
+                    echo "Error: HTML report was not generated."
                 }
+            } else {
+                echo "Error: XML report not found: test-results.xml"
             }
         }
+    }
+    }
 
         stage('CODE ANALYSIS with SONARQUBE') {
             when {
