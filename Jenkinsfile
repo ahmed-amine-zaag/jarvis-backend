@@ -24,7 +24,7 @@ pipeline {
                 branch 'dev*'
             }
             steps {
-                sh './jenkins/scripts/unit-tests.sh'
+                sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
             }
         }
 
