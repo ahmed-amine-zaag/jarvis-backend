@@ -35,11 +35,11 @@ pipeline {
     steps {
         script {
             // Ensure the XML report exists
-            if (fileExists('test-results.xml')) {
+            if (fileExists('test-results.xml')) { 
                 echo "XML report found: test-results.xml"
 
                 // Transform the XML report to HTML
-                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml test-results.html'
+                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
 
                 // Check if the HTML report was created successfully
                 if (fileExists('test-results.html')) {
