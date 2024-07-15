@@ -1,0 +1,1 @@
+sed -i 's|build: .|image: stage.acoba.com/web-service:latest|' docker-compose.yml

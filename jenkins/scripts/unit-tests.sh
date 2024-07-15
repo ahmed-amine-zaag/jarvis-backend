@@ -1,0 +1,1 @@
+phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    build: .
+    image: stage.acoba.com/web-service:latest
     container_name: web-service-container
     ports:
       - "80:80"

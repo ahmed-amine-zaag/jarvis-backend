@@ -22,8 +22,7 @@ pipeline {
         stage('Transform and Send Report') {
             steps {
                 script {
-                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml 
-                    > test-results.html'
+                    sh ''
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
@@ -52,13 +51,20 @@ pipeline {
                 }
             }
         }
-        stage('Quality Gates') {
+        stage('Deploy to AWS') {
             steps {
-                echo 'step1'
-                sleep time: 1, unit: 'MINUTES'
-                sleep time: 5, unit: 'SECONDS'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                    credentialsId: 'Jenkins-With-Beanstalk-Credentials'
+                ]]) {
+                    sh "echo 'n' | eb init --region eu-west-1 ws-jarvis-dev-docker"
+                    sh "eb deploy"
+                }
             }
         }
+        
         stage('Building Image') {
             steps {
                 echo 'Building Image ...'
