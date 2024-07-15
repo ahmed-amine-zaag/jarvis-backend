@@ -119,6 +119,9 @@ pipeline {
         }
 
         stage('LOAD TESTS') {
+            when {
+                branch 'beta*'
+            }
             steps {
                 echo 'Executing Load Tests ....'
                 sleep time: 30, unit: 'SECONDS'
