@@ -9,13 +9,21 @@ pipeline {
     }
 
     stages {
+        // Stage to set permissions for all scripts
+        stage('Set Permissions') {
+            steps {
+                sh '''
+                    chmod +x jenkins/scripts/*.sh
+                '''
+            }
+        }
+
         // Stages for dev environment
         stage('UNIT TEST') {
             when {
                 branch 'dev*'
             }
             steps {
-                sh 'chmod +x jenkins/scripts/unit-tests.sh'
                 sh './jenkins/scripts/unit-tests.sh'
             }
         }
