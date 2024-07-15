@@ -34,7 +34,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh './jenkins/scripts/transform-to-html.sh'
+                    sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml test-results.html'
                     def emailBody = readFile('test-results.html')
                     emailext(
                         to: 'ahmed.aminzaag@acoba.com',
