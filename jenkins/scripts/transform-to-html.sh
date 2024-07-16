@@ -1,1 +1,0 @@
-xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml test-results.html

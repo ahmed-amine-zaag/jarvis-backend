@@ -21,7 +21,7 @@ pipeline {
         // Stages for dev environment
         stage('UNIT TEST') {
             when {
-                branch 'dev*'
+                branch 'dev'
             }
             steps {
                 sh 'phpunit --log-junit test-results.xml attendancemonitoring/tests/unitTest.php'
@@ -30,7 +30,7 @@ pipeline {
 
         stage('SEND REPORT') {
     when {
-        branch 'dev*'
+        branch 'dev'
     }
     steps {
         script {
@@ -65,7 +65,7 @@ pipeline {
 
         stage('CODE ANALYSIS with SONARQUBE') {
             when {
-                branch 'dev*'
+                branch 'dev'
             }
             environment {
                 PATH = "${scannerHome}/bin:${env.PATH}"
@@ -87,7 +87,7 @@ pipeline {
 
         stage('DEPLOY TO DEV ENVIRONMENT') {
             when {
-                branch 'dev*'
+                branch 'dev'
             }
             steps {
                 withCredentials([[
@@ -104,7 +104,7 @@ pipeline {
         // Stages for beta environment
         stage('DEPLOY TO BETA ENVIRONMENT') {
             when {
-                branch 'beta*'
+                branch 'beta'
             }
             steps {
                 withCredentials([[
@@ -120,7 +120,7 @@ pipeline {
 
         stage('LOAD TESTS') {
             when {
-                branch 'beta*'
+                branch 'beta'
             }
             steps {
                 echo 'Executing Load Tests ....'
