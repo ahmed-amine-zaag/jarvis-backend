@@ -11,6 +11,13 @@ pipeline {
     stages {
         // Stage to set permissions for all scripts
         stage('Set Permissions') {
+            when {
+                anyOf {
+                    branch 'dev'
+                    branch 'beta'
+                    branch 'main'
+                }
+            }
             steps {
                 sh '''
                     chmod +x jenkins/scripts/*.sh
