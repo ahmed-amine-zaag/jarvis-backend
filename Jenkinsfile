@@ -12,9 +12,7 @@ pipeline {
         // Stage to set permissions for all scripts
         stage('Set Permissions') {
             steps {
-                sh '''
-                    chmod +x jenkins/scripts/*.sh
-                '''
+                sh 'chmod +x jenkins/scripts/*.sh'
             }
         }
 
@@ -29,39 +27,39 @@ pipeline {
         }
 
         stage('SEND REPORT') {
-    when {
-        branch 'dev'
-    }
-    steps {
-        script {
-            // Ensure the XML report exists
-            if (fileExists('test-results.xml')) { 
-                echo "XML report found: test-results.xml"
+            when {
+                branch 'dev'
+            }
+            steps {
+                script {
+                    // Ensure the XML report exists
+                    if (fileExists('test-results.xml')) { 
+                        echo "XML report found: test-results.xml"
 
-                // Transform the XML report to HTML
-                sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
+                        // Transform the XML report to HTML
+                        sh 'xsltproc attendancemonitoring/tests/phpunit-report.xsl test-results.xml > test-results.html'
 
-                // Check if the HTML report was created successfully
-                if (fileExists('test-results.html')) {
-                    echo "HTML report generated: test-results.html"
+                        // Check if the HTML report was created successfully
+                        if (fileExists('test-results.html')) {
+                            echo "HTML report generated: test-results.html"
 
-                    // Read the HTML report and send it via email
-                    def emailBody = readFile('test-results.html')
-                    emailext(
-                        to: 'ahmed.aminzaag@acoba.com',
-                        subject: "PHP Unit Test Report: ${env.projectName} - Build #${env.BUILD_NUMBER}",
-                        body: emailBody,
-                        mimeType: 'text/html'
-                    )
-                } else {
-                    echo "Error: HTML report was not generated."
+                            // Read the HTML report and send it via email
+                            def emailBody = readFile('test-results.html')
+                            emailext(
+                                to: 'ahmed.aminzaag@acoba.com',
+                                subject: "PHP Unit Test Report: ${projectName} - Build #${env.BUILD_NUMBER}",
+                                body: emailBody,
+                                mimeType: 'text/html'
+                            )
+                        } else {
+                            echo "Error: HTML report was not generated."
+                        }
+                    } else {
+                        echo "Error: XML report not found: test-results.xml"
+                    }
                 }
-            } else {
-                echo "Error: XML report not found: test-results.xml"
             }
         }
-    }
-    }
 
         stage('CODE ANALYSIS with SONARQUBE') {
             when {
@@ -128,6 +126,54 @@ pipeline {
             }
         }
 
+        stage('RUN LOAD TEST') {
+            when {
+                branch 'beta'
+            }
+            steps {
+                script {
+                    def jmeterPath = '/opt/apache-jmeter-5.6.3/bin'
+                    def testPlanPath = "${jmeterPath}/jmeter-senarios/senario-add-department.jmx"
+                    def resultsPath = "${env.WORKSPACE}/results.csv" // Ensure correct file format
+
+                    // Run the JMeter test plan with CSV output format
+                    sh "${jmeterPath}/jmeter -n -t ${testPlanPath} -l ${resultsPath} -Jjmeter.save.saveservice.output_format=csv"
+                }
+            }
+        }
+
+        stage('Generate Report') {
+            when {
+                branch 'beta'
+            }
+            steps {
+                script {
+                    def jmeterPath = '/opt/apache-jmeter-5.6.3/bin'
+                    def resultsPath = "${env.WORKSPACE}/results.csv"
+                    def reportPath = "${env.WORKSPACE}/jmeter-report"
+                    
+                    // Create the report directory
+                    sh "mkdir -p ${reportPath}"
+                    
+                    // Generate the HTML report
+                    sh "${jmeterPath}/jmeter -g ${resultsPath} -o ${reportPath}"
+                    
+                    // Archive the report
+                    archiveArtifacts artifacts: "jmeter-report/**", allowEmptyArchive: true
+                    
+                    // Publish performance report with comparison to a past build
+                    perfReport sourceDataFiles: 'results.csv', 
+                               filterRegex: '', 
+                               relativeFailedThresholdNegative: 1.2, 
+                               relativeFailedThresholdPositive: 1.89, 
+                               relativeUnstableThresholdNegative: 1.8, 
+                               relativeUnstableThresholdPositive: 1.5, 
+                               modeEvaluation: true, 
+                               nthBuildNumber: 1
+                }
+            }
+        }
+
         // Stages for production environment
         stage('Building Image') {
             when {
@@ -138,6 +184,7 @@ pipeline {
                 sh "docker build -t ${image_name_base}:${env.BUILD_NUMBER} -t ${image_name_base}:latest ."
             }
         }
+
         stage('Pushing Image to Nexus') {
             when {
                 branch 'main'
@@ -161,7 +208,8 @@ pipeline {
                     sh './jenkins/scripts/modify-docker-compose.sh'
                 }
             }
-        }        
+        }
+
         stage('DEPLOY TO PROD ENVIRONMENT') {
             when {
                 branch 'main'
@@ -176,6 +224,12 @@ pipeline {
                     sh './jenkins/scripts/deploy-to-prod.sh'
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
