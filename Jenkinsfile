@@ -125,15 +125,53 @@ pipeline {
             }
         }
 
-        stage('LOAD TESTS') {
+        stage('Run JMeter Test') {
             when {
                 branch 'beta'
             }
             steps {
-                echo 'Executing Load Tests ....'
-                sleep time: 30, unit: 'SECONDS'
+                script {
+                    def jmeterPath = '/opt/apache-jmeter-5.6.3/bin'
+                    def testPlanPath = "${jmeterPath}/jmeter-senarios/s1.jmx"
+                    def resultsPath = "${env.WORKSPACE}/results.csv" // Ensure correct file format
+
+                    // Run the JMeter test plan with CSV output format
+                    sh "${jmeterPath}/jmeter -n -t ${testPlanPath} -l ${resultsPath} -Jjmeter.save.saveservice.output_format=csv"
+                }
             }
         }
+        stage('Generate Report') {
+            when {
+                branch 'beta'
+            }
+            steps {
+                script {
+                    def jmeterPath = '/opt/apache-jmeter-5.6.3/bin'
+                    def resultsPath = "${env.WORKSPACE}/results.csv"
+                    def reportPath = "${env.WORKSPACE}/jmeter-report"
+                    
+                    // Create the report directory
+                    sh "mkdir -p ${reportPath}"
+                    
+                    // Generate the HTML report
+                    sh "${jmeterPath}/jmeter -g ${resultsPath} -o ${reportPath}"
+                    
+                    // Archive the report
+                    archiveArtifacts artifacts: "jmeter-report/**", allowEmptyArchive: true
+                    
+                    // Publish performance report with comparison to a past build
+                    perfReport sourceDataFiles: 'results.csv', 
+                              filterRegex: '', 
+                              relativeFailedThresholdNegative: 1.2, 
+                              relativeFailedThresholdPositive: 1.89, 
+                              relativeUnstableThresholdNegative: 1.8, 
+                              relativeUnstableThresholdPositive: 1.5, 
+                              modeEvaluation: true, 
+                              nthBuildNumber: 1
+                }
+            }
+        }
+    }
 
         // Stages for production environment
         stage('Building Image') {
@@ -183,6 +221,12 @@ pipeline {
                     sh './jenkins/scripts/deploy-to-prod.sh'
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
