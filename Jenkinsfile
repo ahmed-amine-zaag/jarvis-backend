@@ -19,7 +19,9 @@ pipeline {
                 }
             }
             steps {
-                sh 'chmod +x jenkins/scripts/*.sh'
+                sh '''
+                    chmod +x jenkins/scripts/*.sh
+                '''
             }
         }
 
@@ -54,7 +56,7 @@ pipeline {
                             def emailBody = readFile('test-results.html')
                             emailext(
                                 to: 'ahmed.aminzaag@acoba.com',
-                                subject: "PHP Unit Test Report: ${projectName} - Build #${env.BUILD_NUMBER}",
+                                subject: "PHP Unit Test Report: ${env.projectName} - Build #${env.BUILD_NUMBER}",
                                 body: emailBody,
                                 mimeType: 'text/html'
                             )
@@ -123,24 +125,14 @@ pipeline {
             }
         }
 
-        stage('LOAD TESTS') {
-            when {
-                branch 'beta'
-            }
-            steps {
-                echo 'Executing Load Tests ....'
-                sleep time: 30, unit: 'SECONDS'
-            }
-        }
-
-        stage('RUN LOAD TEST') {
+        stage('Run JMeter Test') {
             when {
                 branch 'beta'
             }
             steps {
                 script {
                     def jmeterPath = '/opt/apache-jmeter-5.6.3/bin'
-                    def testPlanPath = "${jmeterPath}/jmeter-senarios/senario-add-department.jmx"
+                    def testPlanPath = "${jmeterPath}/jmeter-senarios/s1.jmx"
                     def resultsPath = "${env.WORKSPACE}/results.csv" // Ensure correct file format
 
                     // Run the JMeter test plan with CSV output format
@@ -170,13 +162,13 @@ pipeline {
                     
                     // Publish performance report with comparison to a past build
                     perfReport sourceDataFiles: 'results.csv', 
-                               filterRegex: '', 
-                               relativeFailedThresholdNegative: 1.2, 
-                               relativeFailedThresholdPositive: 1.89, 
-                               relativeUnstableThresholdNegative: 1.8, 
-                               relativeUnstableThresholdPositive: 1.5, 
-                               modeEvaluation: true, 
-                               nthBuildNumber: 1
+                              filterRegex: '', 
+                              relativeFailedThresholdNegative: 1.2, 
+                              relativeFailedThresholdPositive: 1.89, 
+                              relativeUnstableThresholdNegative: 1.8, 
+                              relativeUnstableThresholdPositive: 1.5, 
+                              modeEvaluation: true, 
+                              nthBuildNumber: 1
                 }
             }
         }
@@ -215,7 +207,7 @@ pipeline {
                     sh './jenkins/scripts/modify-docker-compose.sh'
                 }
             }
-        }
+        }        
 
         stage('DEPLOY TO PROD ENVIRONMENT') {
             when {
@@ -232,7 +224,7 @@ pipeline {
                 }
             }
         }
-    }
+    } // End of stages block
 
     post {
         always {
